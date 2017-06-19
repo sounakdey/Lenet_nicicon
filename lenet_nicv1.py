@@ -6,12 +6,14 @@ Dataroot Organisation: nicicon_WI
                        -- Train (files : 4_w033-03309-7_033_Casualty ; where 4 is the label, then writer and so on)
                        |
                        -- Test  (same as above)
-Test Acurracy : 93% (Writer Independent)
+Test Acurracy : 97% (Writer Independent) Trained with (9600) samples
 '''
 from __future__ import print_function
 import argparse
 import cv2
-import sys
+#import sys
+#import numpy as np
+from torchsample.transforms import RandomAffine, ToTensor, TypeCast
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -51,8 +53,12 @@ if args.cuda:
 kwargs = {'num_workers': 4, 'pin_memory': True} if args.cuda else {}
 base_path = args.dataroot
 
+tform = RandomAffine(rotation_range=30, translation_range=0.2, zoom_range=(0.8, 1.2))
+affine_scale = lambda x: tform(x)
+
 dset_train = NicIcon(base_path, train=True, img_ext='.pbm',
-                     transform=transforms.Compose([transforms.ToTensor()]))
+                     transform=transforms.Compose([transforms.ToTensor(),
+                                                   transforms.Lambda(affine_scale)]))
 dset_test = NicIcon(base_path, img_ext='.pbm',
                     transform=transforms.Compose([transforms.ToTensor()]))
 train_loader = torch.utils.data.DataLoader(dset_train, batch_size=args.batch_size, shuffle=True, **kwargs)
@@ -83,9 +89,6 @@ class Net(nn.Module):
         return F.log_softmax(x)
 
 
-# model = torch.load('./lenet_minst_model.pt')
-# print (model.items()[0:3])
-# sys.exit()
 model = Net()
 if args.cuda:
     model.cuda()
