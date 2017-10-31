@@ -22,6 +22,7 @@ from torchvision import datasets, transforms
 from torch.autograd import Variable
 from Nicicon import NicIcon
 
+
 # Training settings
 parser = argparse.ArgumentParser(description='PyTorch NicIcon Example')
 parser.add_argument('--dataroot', type=str, default='/home/sounak/Documents/Datasets/nicicon_WI/',
